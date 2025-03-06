@@ -36,6 +36,10 @@ class P8:
             index = int(opcode[1], 16)
             self.data_registers[index] = int(opcode[2:], 16)
             self.instruction_pointer += 2
+        elif opcode.startswith("7"):
+            index = int(opcode[1], 16)
+            self.data_registers[index] += int(opcode[2:], 16)
+            self.instruction_pointer += 2
         elif opcode.startswith("a"):
             self.address_register = int(opcode[1:], 16)
             self.instruction_pointer += 2
@@ -64,6 +68,10 @@ class P8:
             self.instruction_pointer += 2
 
             self.render()
+        else:
+            raise NotImplementedError(
+                f"Encountered {opcode} -- an opcode that isn't implemented."
+            )
 
     def clear_screen(self):
         self.display = [[0 for _ in range(64)] for _ in range(32)]
