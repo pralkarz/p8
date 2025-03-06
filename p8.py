@@ -9,7 +9,7 @@ class P8:
         self.bg_color = pygame.Color(255, 230, 238)
         self.fg_color = pygame.Color(52, 50, 49)
 
-        self.instruction_pointer = 0x200
+        self.pc = 0x200
         self.memory = [0 for _ in range(0xFFF)]
         with open(sys.argv[1], "rb") as file:
             address = 0x200
@@ -23,50 +23,50 @@ class P8:
         self.display = [[0 for _ in range(64)] for _ in range(32)]
 
     def next_opcode(self):
-        first_byte = self.memory[self.instruction_pointer]
-        second_byte = self.memory[self.instruction_pointer + 1]
+        first_byte = self.memory[self.pc]
+        second_byte = self.memory[self.pc + 1]
         opcode = hex(first_byte)[2:].zfill(2) + hex(second_byte)[2:].zfill(2)
 
         if opcode == "00e0":
             self.clear_screen()
             self.render()
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode == "00ee":
-            self.instruction_pointer = self.stack.pop() + 2
+            self.pc = self.stack.pop() + 2
         elif opcode.startswith("1"):
-            self.instruction_pointer = int(opcode[1:], 16)
+            self.pc = int(opcode[1:], 16)
         elif opcode.startswith("2"):
-            self.stack.append(self.instruction_pointer)
-            self.instruction_pointer = int(opcode[1:], 16)
+            self.stack.append(self.pc)
+            self.pc = int(opcode[1:], 16)
         elif opcode.startswith("3"):
             index = int(opcode[1], 16)
             if self.data_registers[index] == int(opcode[2:], 16):
-                self.instruction_pointer += 4
+                self.pc += 4
             else:
-                self.instruction_pointer += 2
+                self.pc += 2
         elif opcode.startswith("4"):
             index = int(opcode[1], 16)
             if self.data_registers[index] != int(opcode[2:], 16):
-                self.instruction_pointer += 4
+                self.pc += 4
             else:
-                self.instruction_pointer += 2
+                self.pc += 2
         elif opcode.startswith("5"):
             vx = self.data_registers[int(opcode[1], 16)]
             vy = self.data_registers[int(opcode[2], 16)]
             if vx == vy:
-                self.instruction_pointer += 4
+                self.pc += 4
             else:
-                self.instruction_pointer += 2
+                self.pc += 2
         elif opcode.startswith("6"):
             index = int(opcode[1], 16)
             self.data_registers[index] = int(opcode[2:], 16)
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode.startswith("7"):
             index = int(opcode[1], 16)
             self.data_registers[index] += int(opcode[2:], 16)
             if self.data_registers[index] > 255:
                 self.data_registers[index] &= 255
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode.startswith("8"):
             match opcode[3]:
                 case "0":
@@ -141,17 +141,17 @@ class P8:
                         f"Encountered {opcode} -- an invalid or not implemented opcode."
                     )
 
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode.startswith("9"):
             vx = self.data_registers[int(opcode[1], 16)]
             vy = self.data_registers[int(opcode[2], 16)]
             if vx != vy:
-                self.instruction_pointer += 4
+                self.pc += 4
             else:
-                self.instruction_pointer += 2
+                self.pc += 2
         elif opcode.startswith("a"):
             self.address_register = int(opcode[1:], 16)
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode.startswith("d"):
             vx = self.data_registers[int(opcode[1], 16)]
             vy = self.data_registers[int(opcode[2], 16)]
@@ -186,7 +186,7 @@ class P8:
 
                 row_number += 1
 
-            self.instruction_pointer += 2
+            self.pc += 2
         elif opcode.startswith("f"):
             match opcode[2:]:
                 case "1e":
@@ -225,7 +225,7 @@ class P8:
                         f"Encountered {opcode} -- an invalid or not implemented opcode."
                     )
 
-            self.instruction_pointer += 2
+            self.pc += 2
         else:
             raise NotImplementedError(
                 f"Encountered {opcode} -- an invalid or not implemented opcode."
