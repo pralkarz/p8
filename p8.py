@@ -1,3 +1,4 @@
+import random
 import sys
 
 import pygame
@@ -56,7 +57,7 @@ class P8:
 
         if opcode == "00e0":
             self.clear_screen()
-            self.render()
+            self.draw()
             self.pc += 2
         elif opcode == "00ee":
             self.pc = self.stack.pop() + 2
@@ -179,6 +180,11 @@ class P8:
         elif opcode.startswith("a"):
             self.address_register = int(opcode[1:], 16)
             self.pc += 2
+        elif opcode.startswith("c"):
+            self.data_registers[int(opcode[1], 16)] = random.randint(0, 255) & int(
+                opcode[2:], 16
+            )
+            self.pc += 2
         elif opcode.startswith("d"):
             vx = self.data_registers[int(opcode[1], 16)]
             vy = self.data_registers[int(opcode[2], 16)]
@@ -198,16 +204,7 @@ class P8:
                             self.data_registers[15] = 1
                         self.display[y][x] ^= 1
 
-                        pygame.draw.rect(
-                            self.screen,
-                            self.fg_color if self.display[y][x] else self.bg_color,
-                            pygame.Rect(
-                                x * self.scaling_factor,
-                                y * self.scaling_factor,
-                                self.scaling_factor,
-                                self.scaling_factor,
-                            ),
-                        )
+                        self.draw()
 
                     shift -= 1
 
@@ -294,7 +291,7 @@ class P8:
     def clear_screen(self):
         self.display = [[0 for _ in range(64)] for _ in range(32)]
 
-    def render(self):
+    def draw(self):
         for y, row in enumerate(self.display):
             for x, pixel in enumerate(row):
                 pygame.draw.rect(
