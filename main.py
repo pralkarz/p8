@@ -38,7 +38,6 @@ def main():
 
     clock = pygame.time.Clock()
     delay_timer_tick = pygame.USEREVENT + 1
-    pygame.time.set_timer(delay_timer_tick, 17)  # ~60 Hz
 
     running = True
     while running:
@@ -62,13 +61,14 @@ def main():
                             p8.completed_key_press = idx
                     except ValueError:
                         print("Unsupported key released.")
-                case delay_timer_tick:
-                    if p8.delay_timer > 0:
-                        p8.delay_timer -= 1
 
-        p8.process_next_opcode()
-        pygame.display.flip()
-        clock.tick()
+        for _ in range(15):
+            p8.next_cycle()
+
+        if p8.delay_timer > 0:
+            p8.delay_timer -= 1
+
+        clock.tick(60)
 
     pygame.quit()
 

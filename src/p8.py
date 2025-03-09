@@ -38,7 +38,7 @@ class P8:
         self.display = [[0 for _ in range(64)] for _ in range(32)]
 
     # Some operations inspired by https://github.com/Janiczek/cfs-chip8.
-    def process_next_opcode(self):
+    def next_cycle(self):
         opcode = self.memory[self.pc] << 8
         opcode |= self.memory[self.pc + 1]
 
@@ -246,3 +246,4 @@ class P8:
                         self.scaling_factor,
                     ),
                 )
+        pygame.display.flip()
